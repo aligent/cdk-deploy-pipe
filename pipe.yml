@@ -1,0 +1,13 @@
+name: CDK Deploy Pipe
+image: aligent/cdk-deploy-pipe:1.0.0
+description: Deploy CDK stacks 
+category: Deployment
+repository: https://github.com/aligent/cdk-deploy-pipe
+maintainer:
+  name: Aligent
+  website: https://www.aligent.com.au/
+tags:
+  - deploy
+  - AWS
+  - CDK
+  - Cloud Formation
