@@ -11,10 +11,14 @@ COPY requirements.txt /
 WORKDIR /
 RUN pip3 install --no-cache-dir -r requirements.txt
 
+# For dev environment
+RUN mkdir -p /app/sample
+
+
 # copy source code
 COPY  cdk-config.yml /
 COPY pipe.yml /
 COPY pipe /
-# COPY sample /
+
 
 ENTRYPOINT ["python3", "/pipe.py"]
