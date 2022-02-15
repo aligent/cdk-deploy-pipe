@@ -20,8 +20,10 @@ COPY  cdk-config.yml /
 COPY pipe.yml /
 COPY pipe /
 RUN chmod a+x /pipe.py && \
+    chown -R node ~/.npm && \
     pip3 install --no-cache-dir -r requirements.txt
 
+USER node
 
 ENTRYPOINT ["python", "/pipe.py"]
 CMD ["--config", "/cdk-config.yml"]
