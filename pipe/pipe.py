@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description='CDK-PIPE Universal BitBucket pipe 
 
 # Argument to set config file path
 parser.add_argument('--config', 
-                    const='cdk-self.yml', default='cdk-self.yml',
+                    const='cdk-config.yml', default='cdk-config.yml',
                     nargs='?',
                     help='CDK-PIPE config file path')
 args = parser.parse_args()
