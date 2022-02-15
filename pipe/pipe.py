@@ -160,7 +160,7 @@ class CDKDeployPipe(Pipe):
 
         # CDK Diff
         if self.cdk_diff:
-            self.log_info("cdk diff initiated[{}] => {}".format*(self.working_dir,self.cmd_cdk_diff))
+            self.log_info("cdk diff initiated[{}] => {}".format(self.working_dir,self.cmd_cdk_diff))
             status, err = self.__scriptRunner(working_dir,[self.cmd_cdk_diff])
             if not status:
                 return Exception('cdk diff: ' + str(err))
