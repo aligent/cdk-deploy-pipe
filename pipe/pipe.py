@@ -1,5 +1,6 @@
 from distutils.log import error
 from email.policy import default
+from ensurepip import bootstrap
 import io, os , subprocess, yaml
 import string, argparse
 from bitbucket_pipes_toolkit import Pipe, yaml, get_variable
@@ -29,6 +30,9 @@ variables = {
     'CDK_BEFORE_SCRIPT': {'type': 'string', 'required': False, 'nullable': True},
     'CDK_AFTER_SCRIPT': {'type': 'string', 'required': False, 'nullable': True},
     'CDK_EXTRA_ARGS': {'type': 'string', 'required': False, 'nullable': True},
+    'CDK_EXTRA_ARGS_DIFF': {'type': 'string', 'required': False, 'nullable': True},
+    'CDK_EXTRA_ARGS_SYNTH': {'type': 'string', 'required': False, 'nullable': True},
+    'CDK_EXTRA_ARGS_BOOTSTRAP': {'type': 'string', 'required': False, 'nullable': True},
     'CDK_CONFIG_PATH': {'type': 'string', 'required': False, 'nullable': True},
 }
 
@@ -40,15 +44,18 @@ class CDKDeployPipe(Pipe):
         super().__init__(*args, **kwargs) 
 
         # Read Environment Variables
-        self.cdk_config_path    = self.get_variable('CDK_CONFIG_PATH')
-        self.working_dir        = self.get_variable('CDK_ROOT_DIR')
-        self.cdk_bootstrap      = self.get_variable("CDK_BOOTSTRAP")
-        self.cdk_deploy         = self.get_variable("CDK_DEPLOY")
-        self.cdk_extra_args     = self.get_variable("CDK_EXTRA_ARGS")
-        self.cdk_diff           = self.get_variable("CDK_DIFF")
-        self.cdk_synth          = self.get_variable("CDK_SYNTH")
-        self.cdk_before_script  = self.get_variable('CDK_BEFORE_SCRIPT')
-        self.cdk_after_script   = self.get_variable('CDK_AFTER_SCRIPT')
+        self.cdk_config_path            = self.get_variable('CDK_CONFIG_PATH')
+        self.working_dir                = self.get_variable('CDK_ROOT_DIR')
+        self.cdk_bootstrap              = self.get_variable("CDK_BOOTSTRAP")
+        self.cdk_deploy                 = self.get_variable("CDK_DEPLOY")
+        self.cdk_extra_args             = self.get_variable("CDK_EXTRA_ARGS")
+        self.cdk_extra_args_diff        = self.get_variable("CDK_EXTRA_ARGS_DIFF")
+        self.cdk_extra_args_synth       = self.get_variable("CDK_EXTRA_ARGS_SYNTH")
+        self.cdk_extra_args_bootstrap   = self.get_variable("CDK_EXTRA_ARGS_BOOTSTRAP")
+        self.cdk_diff                   = self.get_variable("CDK_DIFF")
+        self.cdk_synth                  = self.get_variable("CDK_SYNTH")
+        self.cdk_before_script          = self.get_variable('CDK_BEFORE_SCRIPT')
+        self.cdk_after_script           = self.get_variable('CDK_AFTER_SCRIPT')
 
         
         # If custom config file has been provided using environment variable, it should take the precedence
@@ -137,11 +144,17 @@ class CDKDeployPipe(Pipe):
 
         # CDK Bootstrap
         if self.cdk_bootstrap:
-            self.log_info("cdk boostrap initiated[{}] => {}".format(self.working_dir,self.cmd_cdk_bootstrap))
-            status, err = self.__scriptRunner(working_dir,[self.cmd_cdk_bootstrap])
-            if not status:
-                return Exception('cdk bootstrap: ' + str(err))
-         
+            try:
+                bootstrap_cmd = self.cmd_cdk_bootstrap
+                # If bootstrap script should be extended
+                if self.cdk_extra_args_bootstrap:
+                    extension = self.cdk_extra_args_bootstrap
+                    self.log_warning("'{}' has been extended with '{}'".format(bootstrap_cmd, extension))
+                    bootstrap_cmd = " ".join((bootstrap_cmd, extension))
+                self.log_info("cdk boostrap initiated[{}] => {}".format(self.working_dir,bootstrap_cmd))
+                status, err = self.__scriptRunner(working_dir, [bootstrap_cmd])
+            except Exception as exception:
+                return Exception('cdk bootstrap: ' + str(exception))
             
         # CDK Deploy
         if self.cdk_deploy:
@@ -161,17 +174,35 @@ class CDKDeployPipe(Pipe):
 
         # CDK Diff
         if self.cdk_diff:
-            self.log_info("cdk diff initiated[{}] => {}".format(self.working_dir,self.cmd_cdk_diff))
-            status, err = self.__scriptRunner(working_dir,[self.cmd_cdk_diff])
-            if not status:
-                return Exception('cdk diff: ' + str(err))
+            try:
+                diff_cmd = self.cmd_cdk_diff
+                # If diff script should be extended
+                if self.cdk_extra_args_diff:
+                    extension = self.cdk_extra_args_diff
+                    self.log_warning("'{}' has been extended with '{}'".format(diff_cmd, extension))
+                    diff_cmd = " ".join((diff_cmd, extension))
+                self.log_info("cdk diff initiated[{}] => {}".format(self.working_dir,diff_cmd))
+                status, err = self.__scriptRunner(working_dir, [diff_cmd])
+                if not status:
+                    return Exception('cdk diff: ' + str(err))
+            except Exception as exception:
+                return Exception('cdk diff: ' + str(exception))
 
         # CDK Synth
         if self.cdk_synth:
-            self.log_info("cdk synth initiated[{}] => {}".format(self.working_dir,self.cmd_cdk_synth))
-            status, err = self.__scriptRunner(working_dir,[self.cmd_cdk_synth])
-            if not status:
-                return Exception('cdk synth: ' + str(err))
+            try:
+                synth_cmd = self.cmd_cdk_synth
+                # If synth script should be extended
+                if self.cdk_extra_args_synth:
+                    extension = self.cdk_extra_args_synth
+                    self.log_warning("'{}' has been extended with '{}'".format(synth_cmd, extension))
+                    synth_cmd = " ".join((synth_cmd, extension))
+                self.log_info("cdk synth initiated[{}] => {}".format(self.working_dir,synth_cmd))
+                status, err = self.__scriptRunner(working_dir, [synth_cmd])
+                if not status:
+                    return Exception('cdk synth: ' + str(err))
+            except Exception as exception:
+                return Exception('cdk synth: ' + str(exception))
            
         return None
     

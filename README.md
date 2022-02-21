@@ -1,10 +1,13 @@
 # Aligent CDK Deploy Pipe
+
 A BitBucket pipe to deploy CDK Stacks
 
 ## Terminologies
 
 ### Static Config
+
 Static config is a `yaml` script which can be used to configure and customise the behaviour of the cdk commands.
+
 ```sh
 cdk-pipe:
   commands:
@@ -20,20 +23,27 @@ cdk-pipe:
   afterScripts:
     - echo "Deployment is completed"
 ```
+
 The default static script can be altered at runtime by setting `CDK_CONFIG_PATH` environment variable.
 It is mandatory to set CDK commands using the static scripts.
 
 ### Before and After scripts
+
 As the name suggests, the before and after scripts can be used to extend the behaviour.
 Both `static config script` and environment variables (`CDK_BEFORE_SCRIPT`, `CDK_AFTER_SCRIPT`) can be used in the context.
-When setting before and after scripts using environment variables, use `;` to separate the statements. 
+When setting before and after scripts using environment variables, use `;` to separate the statements.
 
 ### CDK_EXTRA_ARGS
+
 `CDK_EXTRA_ARGS` environment variable only to be associated, when it is required to append additional arguments to `cdk deploy` command.
 For example, `CDK_EXTRA_ARGS='--require-approval never'` will extend the deploy command to `cdk deploy --require-approval never`
 
+If it is required to extend `diff`, `synth` or `bootstrap` commands, `CDK_EXTRA_ARGS_DIFF`, `CDK_EXTRA_ARGS_SYNTH` and `CDK_EXTRA_ARGS_BOOTSTRAP` environment variables should be used.
+
 ## YAML Definition
+
 Minimum configuration
+
 ```sh
 - step:
     name: "CDK Deploy"
@@ -45,6 +55,7 @@ Minimum configuration
 ```
 
 ## Variables
+
 | Variable | Usage | Defaults |
 |:----------|:-------|:-------|
 | AWS_ACCESS_KEY_ID             | AWS access key id for CDK deployment                                                  |   N/A                 |
@@ -63,7 +74,8 @@ Minimum configuration
 
 ## Development
 
-To build and run locally 
+To build and run locally
+
 ```sh
     # cd into the root directory
     docker build -t cdk-pipe:dev .
@@ -71,6 +83,7 @@ To build and run locally
 ```
 
 To execute the cdk processes, python [subprocess] library has been used. To alter this with a new library use `__scriptRunner()` function
+
 ```sh
     def __scriptRunner(self, working_dir, arr):
         # Change working Directory
