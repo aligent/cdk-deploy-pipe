@@ -4,7 +4,7 @@ A BitBucket pipe to deploy CDK Stacks
 ## Terminologies
 
 ### Static Config
-Static configuration is a `yaml` script which can be used to configure and customise the behaviour of the cdk commands.
+Static config is a `yaml` script which can be used to configure and customise the behaviour of the cdk commands.
 ```sh
 cdk-pipe:
   commands:
@@ -24,12 +24,12 @@ The default static script can be altered at runtime by setting `CDK_CONFIG_PATH`
 It is mandatory to set CDK commands using the static scripts.
 
 ### Before and After scripts
-As the name suggests the before and after scripts can be used to extend the behaviour.
-Both `static config script` and environment variables (`CDK_BEFORE_SCRIPT`, `CDK_AFTER_SCRIPT`) can be used to set configure them.
-When setting the before and after scripts using environment variables, use `;` to separate the statements. 
+As the name suggests, the before and after scripts can be used to extend the behaviour.
+Both `static config script` and environment variables (`CDK_BEFORE_SCRIPT`, `CDK_AFTER_SCRIPT`) can be used in the context.
+When setting before and after scripts using environment variables, use `;` to separate the statements. 
 
 ### CDK_EXTRA_ARGS
-`CDK_EXTRA_ARGS` environment variable only to be associated when it is required to append additional arguments to `cdk deploy` command.
+`CDK_EXTRA_ARGS` environment variable only to be associated, when it is required to append additional arguments to `cdk deploy` command.
 For example, `CDK_EXTRA_ARGS='--require-approval never'` will extend the deploy command to `cdk deploy --require-approval never`
 
 ## YAML Definition
@@ -50,16 +50,16 @@ Minimum configuration
 | AWS_ACCESS_KEY_ID             | AWS access key id for CDK deployment                                                  |   N/A                 |
 | AWS_SECRET_ACCESS_KEY         | AWS secret key for CDK deployment                                                     |   N/A                 |
 | AWS_DEFAULT_REGION            | Default AWS region                                                                    |   `Nil`               |
-| CDK_ROOT_DIR                  | The working directory where the `cdk` command should executed                         |   `./`                |
+| CDK_ROOT_DIR                  | The working directory where the `cdk` commands should executed                         |   `./`                |
 | DEBUG                         | To enable debug logs                                                                  |   `false`             |
-| CDK_BOOTSTRAP                 | Set this to `true` if is required to bootstrap the stack prior to the deployment      |   `false`             |
-| CDK_SYNTH                     | Set this to `true` if is required to run synth on the stack prior to the deployment   |   `false`             |
-| CDK_DIFF                      | Set this to `true` if is required to run diff on the stack prior to the deployment    |   `false`             |
+| CDK_BOOTSTRAP                 | Set this to `true` if it is required to bootstrap the stack prior to the deployment      |   `false`             |
+| CDK_SYNTH                     | Set this to `true` if it is required to run synth on the stack prior to the deployment   |   `false`             |
+| CDK_DIFF                      | Set this to `true` if it is required to run diff on the stack prior to the deployment    |   `false`             |
 | CDK_DEPLOY                    | Set this to `false` to skip CDK deployment                                            |   `true`              |
 | CDK_BEFORE_SCRIPT             | Set to extend the before script which is configured using the static config           |   `Nil`               |
 | CDK_AFTER_SCRIPT              | Set to extend the after script which is configured using the static config            |   `Nil`               |
-| CDK_EXTRA_ARGS                | Set to extend CDK deployment statement which is configure in the static config        |   `Nil`               |
-| CDK_CONFIG_PATH               | Set if a custom static config should be associated                                    |   `./cdk-config.yml`  |
+| CDK_EXTRA_ARGS                | Set to extend CDK deployment statement which is configured in the static config        |   `Nil`               |
+| CDK_CONFIG_PATH               | Set this if a custom static config should be associated                                    |   `./cdk-config.yml`  |
 
 ## Development
 

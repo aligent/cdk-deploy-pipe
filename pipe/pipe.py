@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description='CDK-PIPE Universal BitBucket pipe 
 
 # Argument to set config file path
 parser.add_argument('--config', 
-                    const='cdk-self.yml', default='cdk-self.yml',
+                    const='cdk-config.yml', default='cdk-config.yml',
                     nargs='?',
                     help='CDK-PIPE config file path')
 args = parser.parse_args()
@@ -39,7 +39,7 @@ class CDKDeployPipe(Pipe):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs) 
 
-        # Read Environment Variable
+        # Read Environment Variables
         self.cdk_config_path    = self.get_variable('CDK_CONFIG_PATH')
         self.working_dir        = self.get_variable('CDK_ROOT_DIR')
         self.cdk_bootstrap      = self.get_variable("CDK_BOOTSTRAP")
@@ -73,21 +73,21 @@ class CDKDeployPipe(Pipe):
             self.log_warning("after script in static config not found")
             self.cdk_static_after_script        = None
         try:
-            self.cmd_cdk_synth =  self.static_config['cdk-pipe']['commands']['cdk']['synth']
-            self.cmd_cdk_diff =  self.static_config['cdk-pipe']['commands']['cdk']['diff']
-            self.cmd_cdk_deploy =  self.static_config['cdk-pipe']['commands']['cdk']['deploy']
-            self.cmd_cdk_bootstrap =  self.static_config['cdk-pipe']['commands']['cdk']['bootstrap']
-            self.cmd_npm_install =  self.static_config['cdk-pipe']['commands']['npm']['install']
+            self.cmd_cdk_synth                  =  self.static_config['cdk-pipe']['commands']['cdk']['synth']
+            self.cmd_cdk_diff                   =  self.static_config['cdk-pipe']['commands']['cdk']['diff']
+            self.cmd_cdk_deploy                 =  self.static_config['cdk-pipe']['commands']['cdk']['deploy']
+            self.cmd_cdk_bootstrap              =  self.static_config['cdk-pipe']['commands']['cdk']['bootstrap']
+            self.cmd_npm_install                =  self.static_config['cdk-pipe']['commands']['npm']['install']
         except Exception as error:
             self.fail("could not find the definition for {} in static config".format(error))
 
 
             
-    # Shell script Runner is an helper function that runs scripts
-    # Accept the array of shell commands
-    # In an event where the a statement failed the function should stop execute rest of the shell commands and return false
+    # Shell script Runner is an helper function to execute shell scripts
+    # Accept an array of shell commands
+    # In an event where a statement failed, the function should stop the execution and return false
     def __scriptRunner(self, working_dir, arr):
-        # Change working Directory
+        # Change the working Directory
         cwd = os.getcwd()
         os.chdir(working_dir)
         i = 0 
@@ -100,16 +100,17 @@ class CDKDeployPipe(Pipe):
             except Exception as error:
                 return False, error
             finally:
-                # Change back to the previous working directory
+                # Change back to the previous directory
                 os.chdir(cwd)
         return True, combined_output
 
     # Run pre/post scripts
     # If the CDK_BEFORE_SCRIPT/CDK_AFTER_SCRIPT environment variable has been set
-    # # It will be executed after the execution of scripts in static config file
+    # It will be executed after the execution of scripts in static config file
     def __scripts(self, static_script, runtime_script):
         combined_output = []
         working_dir = self.working_dir
+
         if static_script is not None:
             status, err = self.__scriptRunner(working_dir, static_script)
             if not status:
@@ -123,12 +124,12 @@ class CDKDeployPipe(Pipe):
             combined_output += err
         return combined_output, None
 
-    # CDK Functions
+    # CDK Function
     # CDK function only return an exception/error when a command failed
     def __cdk(self):
         working_dir = self.working_dir
-        # NPM Install
 
+        # NPM Install
         self.log_info("installing npm packages[{}] => {}".format(self.working_dir,self.cmd_npm_install))
         status, err = self.__scriptRunner(working_dir, [self.cmd_npm_install])
         if not status:
@@ -160,7 +161,7 @@ class CDKDeployPipe(Pipe):
 
         # CDK Diff
         if self.cdk_diff:
-            self.log_info("cdk diff initiated[{}] => {}".format*(self.working_dir,self.cmd_cdk_diff))
+            self.log_info("cdk diff initiated[{}] => {}".format(self.working_dir,self.cmd_cdk_diff))
             status, err = self.__scriptRunner(working_dir,[self.cmd_cdk_diff])
             if not status:
                 return Exception('cdk diff: ' + str(err))
@@ -172,7 +173,6 @@ class CDKDeployPipe(Pipe):
             if not status:
                 return Exception('cdk synth: ' + str(err))
            
-
         return None
     
     def run(self):
@@ -180,7 +180,6 @@ class CDKDeployPipe(Pipe):
         self.log_info('working directory: ' + self.working_dir )
 
         # execute before script
-
         combined_output, err =  self.__scripts(self.cdk_static_before_script, self.cdk_before_script)
         if err is not None:
             self.fail(err)
