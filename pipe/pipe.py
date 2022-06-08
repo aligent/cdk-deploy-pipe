@@ -124,7 +124,7 @@ class CDKDeployPipe(Pipe):
                 return None, err
             combined_output += err
 
-        if runtime_script is not None:
+        if runtime_script is not None and len(runtime_script) > 0:
             status, err = self.__scriptRunner(working_dir, runtime_script.split(";"))
             if not status:
                 return None, err
