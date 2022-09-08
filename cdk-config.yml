@@ -8,7 +8,7 @@ cdk-pipe:
     npm:
        install: npm ci
   beforeScripts:
-    - npm install 
+    - npm version 
   # afterScripts:
   #   - apk add tree
 
