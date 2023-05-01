@@ -5,7 +5,7 @@ import io, os , subprocess, yaml
 import string, argparse
 from bitbucket_pipes_toolkit import Pipe, yaml, get_variable
 
-# Parsser is used to set config file path
+# Parser is used to set config file path
 # The default path of the config file is './cdk-config.yml'
 parser = argparse.ArgumentParser(description='CDK-PIPE Universal BitBucket pipe to execute CDK Stacks.')
 
@@ -18,9 +18,17 @@ args = parser.parse_args()
 
 # Variables should be passed as Deployment or Repository variable. 
 variables = {
+    # AWS Config
     'AWS_ACCESS_KEY_ID': {'type': 'string', 'required': True},
     'AWS_SECRET_ACCESS_KEY': {'type': 'string', 'required': True},
     'AWS_DEFAULT_REGION': {'type': 'string', 'required': False},
+    # Code Checks
+    'CHECK_LINT': {'type': 'boolean', 'required': False, 'default': False},
+    'CHECK_FORMAT': {'type': 'boolean', 'required': False, 'default': False},
+    # Code Checks Override Args
+    'CHECK_LINT_CMD': {'type': 'string', 'required': False},
+    'CHECK_FORMAT_CMD': {'type': 'string', 'required': False},
+    # CDK Settings
     'CDK_ROOT_DIR': {'type': 'string', 'required': False, 'nullable': True, 'default': './'},
     'DEBUG': {'type': 'boolean', 'required': False, 'default': False},
     'CDK_BOOTSTRAP': {'type': 'boolean', 'required': False, 'default': False},
@@ -56,8 +64,11 @@ class CDKDeployPipe(Pipe):
         self.cdk_synth                  = self.get_variable("CDK_SYNTH")
         self.cdk_before_script          = self.get_variable('CDK_BEFORE_SCRIPT')
         self.cdk_after_script           = self.get_variable('CDK_AFTER_SCRIPT')
+        self.check_lint                 = self.get_variable('CHECK_LINT')
+        self.check_format               = self.get_variable('CHECK_FORMAT')
+        self.check_lint_override        = self.get_variable('CHECK_LINT_CMD')
+        self.check_format_override      = self.get_variable('CHECK_FORMAT_CMD') 
 
-        
         # If custom config file has been provided using environment variable, it should take the precedence
         if self.cdk_config_path is not None:
             self.log_warning('static config script has been altered: ' + self.cdk_config_path) 
@@ -85,6 +96,8 @@ class CDKDeployPipe(Pipe):
             self.cmd_cdk_deploy                 =  self.static_config['cdk-pipe']['commands']['cdk']['deploy']
             self.cmd_cdk_bootstrap              =  self.static_config['cdk-pipe']['commands']['cdk']['bootstrap']
             self.cmd_npm_install                =  self.static_config['cdk-pipe']['commands']['npm']['install']
+            self.cmd_npm_lint                   =  self.static_config['cdk-pipe']['commands']['npm']['checks']['lint']
+            self.cmd_npm_format                 =  self.static_config['cdk-pipe']['commands']['npm']['checks']['format']
         except Exception as error:
             self.fail("could not find the definition for {} in static config".format(error))
 
@@ -141,6 +154,30 @@ class CDKDeployPipe(Pipe):
         status, err = self.__scriptRunner(working_dir, [self.cmd_npm_install])
         if not status:
             return Exception('npm install: ' + str(err))     
+
+        # NPM Linting check
+        if (self.check_lint and self.cmd_npm_lint) or self.check_lint_override:
+            try:
+                # CHECK_LINT_CMD env value shall override the values from static script
+                check_linting_cmd = self.check_lint_override or self.cmd_npm_lint 
+                self.log_info("check linting [{}] => {}".format(self.working_dir,check_linting_cmd))
+                status, err = self.__scriptRunner(working_dir, [check_linting_cmd])
+                if not status:
+                    return Exception('check linting: ' + str(err)) 
+            except Exception as exception:
+                return Exception('linting check failed: ' + str(exception))# NPM Format check
+        
+        # NPM Formatting check
+        if (self.check_format and self.cmd_npm_format) or self.check_format_override:
+            try:
+                # CHECK_FORMAT_CMD env value shall override the values from static script
+                check_formatting_cmd = self.check_format_override or self.cmd_npm_format
+                self.log_info("check formatting [{}] => {}".format(self.working_dir, check_formatting_cmd))
+                status, err = self.__scriptRunner(working_dir, [check_formatting_cmd])
+                if not status:
+                    return Exception('check formatting: ' + str(err)) 
+            except Exception as exception:
+                return Exception('formatting check failed: ' + str(exception))
 
         # CDK Bootstrap
         if self.cdk_bootstrap:
