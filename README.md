@@ -38,7 +38,7 @@ When setting before and after scripts using environment variables, use `;` to se
 
 ### Linting and Formatting Checks  
 
-Linting and Formatting checks against the CDK code can be executed at runtime.  
+Linting and Formatting checks against the CDK code can be executed at build time.  
 Required packages and configurations should be included as a apart of the infrastructure code.  
 The default execution commands are defined as a part of [static config]  
 

@@ -165,7 +165,7 @@ class CDKDeployPipe(Pipe):
                 if not status:
                     return Exception('check linting: ' + str(err)) 
             except Exception as exception:
-                return Exception('linting check failed: ' + str(exception))# NPM Format check
+                return Exception('linting check failed: ' + str(exception))
         
         # NPM Formatting check
         if (self.check_format and self.cmd_npm_format) or self.check_format_override:
