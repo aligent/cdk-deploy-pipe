@@ -1,15 +1,16 @@
 cdk-pipe:
   commands:
-    cdk: 
+    cdk:
       bootstrap: npx cdk bootstrap
       deploy: npx cdk deploy
       synth: npx cdk synth
       diff: npx cdk diff
     npm:
-       install: npm ci
+      checks:
+        lint: npm run lint
+        format: npm run format
+      install: npm ci
   beforeScripts:
-    - npm version 
+    - npm version
   # afterScripts:
   #   - apk add tree
-
-      
