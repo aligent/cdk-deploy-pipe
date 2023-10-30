@@ -9,14 +9,6 @@ RUN pip3 install --no-cache --upgrade pip setuptools
 
 WORKDIR /
 
-# For dev environment
-# RUN mkdir -p /app/sample
-
-
-# copy source code
-COPY requirements.txt /
-COPY  cdk-config.yml /
-COPY pipe.yml /
 COPY pipe /
 RUN chmod a+x /pipe.py && \
     chown -R node ~/.npm && \
