@@ -1,5 +1,4 @@
-FROM node:16-alpine3.15
-
+FROM node:18-alpine3.17
 
 # Install python and pip 
 ENV PYTHONUNBUFFERED=1
@@ -13,7 +12,7 @@ COPY pipe /
 RUN chmod a+x /pipe.py && \
     chown -R node ~/.npm && \
     apk add bash && \
-    pip3 install --no-cache-dir -r requirements.txt
+    PIP_CONSTRAINT=cython_constraint.txt pip3 install --no-cache-dir -r requirements.txt
 
 USER node
 
