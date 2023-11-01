@@ -1,0 +1,2 @@
+#!/bin/bash
+docker build --build-arg NODE_TAG="$(echo $DOCKER_TAG | sed 's/-experimental//g')" -f $DOCKERFILE_PATH -t $IMAGE_NAME .
