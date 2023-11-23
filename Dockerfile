@@ -1,4 +1,5 @@
-FROM node:18-alpine3.17
+ARG NODE_TAG
+FROM node:${NODE_TAG}
 
 # Install python and pip 
 ENV PYTHONUNBUFFERED=1
