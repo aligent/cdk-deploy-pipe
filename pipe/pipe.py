@@ -75,7 +75,7 @@ class CDKDeployPipe(Pipe):
             self.config_path = self.cdk_config_path
         try: 
             with io.open(self.config_path, 'r') as stream:
-                self.static_config = yaml.load(stream, Loader=yaml.FullLoader)
+                self.static_config = yaml.safe_load(stream)
         except Exception as error:
             self.fail('could not read static config file')
 
