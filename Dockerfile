@@ -1,19 +1,20 @@
 ARG NODE_TAG
 FROM node:${NODE_TAG}
 
-# Install python and pip 
+# Install python3, pip and bash
 ENV PYTHONUNBUFFERED=1
-RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
-RUN python3 -m ensurepip
-RUN pip3 install --no-cache --upgrade pip setuptools
+RUN apk add --update --no-cache python3 py3-pip bash && \
+    ln -sf python3 /usr/bin/python
 
 WORKDIR /
 
 COPY pipe /
-RUN chmod a+x /pipe.py && \
-    chown -R node ~/.npm && \
-    apk add bash && \
-    PIP_CONSTRAINT=cython_constraint.txt pip3 install --no-cache-dir -r requirements.txt
+
+# Configure virtual env
+RUN python3 -m venv /venv && \
+    . /venv/bin/activate && \
+    PIP_CONSTRAINT=cython_constraint.txt pip install --no-cache-dir -r requirements.txt
+ENV PATH="/venv/bin:$PATH"
 
 USER node
 
