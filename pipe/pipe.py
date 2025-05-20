@@ -1,9 +1,6 @@
-from distutils.log import error
-from email.policy import default
-from ensurepip import bootstrap
 import io, os , subprocess, yaml
-import string, argparse
-from bitbucket_pipes_toolkit import Pipe, yaml, get_variable
+import argparse
+from bitbucket_pipes_toolkit import Pipe, yaml 
 
 # Parser is used to set config file path
 # The default path of the config file is './cdk-config.yml'
