@@ -41,6 +41,24 @@ variables = {
     'CDK_CONFIG_PATH': {'type': 'string', 'required': False, 'nullable': True},
 }
 
+def deep_merge(default_dict, override_dict):
+    """
+    Deep merge two dictionaries, with override_dict values taking precedence.
+    Returns a new dictionary with merged values.
+    """
+    if not isinstance(default_dict, dict) or not isinstance(override_dict, dict):
+        return override_dict
+    
+    result = default_dict.copy()
+    
+    for key, value in override_dict.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            result[key] = deep_merge(result[key], value)
+        else:
+            result[key] = value
+    
+    return result
+
 class CDKDeployPipe(Pipe):
     config_path = args.config
     working_dir = './'
@@ -66,15 +84,29 @@ class CDKDeployPipe(Pipe):
         self.check_lint_override        = self.get_variable('CHECK_LINT_CMD')
         self.check_format_override      = self.get_variable('CHECK_FORMAT_CMD') 
 
-        # If custom config file has been provided using environment variable, it should take the precedence
-        if self.cdk_config_path is not None:
-            self.log_warning('static config script has been altered: ' + self.cdk_config_path) 
-            self.config_path = self.cdk_config_path
-        try: 
+        # Load default config first
+        try:
             with io.open(self.config_path, 'r') as stream:
-                self.static_config = yaml.safe_load(stream)
+                default_config = yaml.safe_load(stream)
+                if not default_config:
+                    self.fail(f'default config file {self.config_path} is empty or invalid')
         except Exception as error:
-            self.fail('could not read static config file')
+            self.fail(f'could not read default config file {self.config_path}: {error}')
+        
+        # If custom config file has been provided, merge it with default
+        if self.cdk_config_path is not None:
+            self.log_info(f'merging override config: {self.cdk_config_path}')
+            try:
+                with io.open(self.cdk_config_path, 'r') as stream:
+                    override_config = yaml.safe_load(stream)
+                    if not override_config:
+                        self.fail(f'override config file {self.cdk_config_path} is empty or invalid')
+            except Exception as error:
+                self.fail(f'could not read override config file {self.cdk_config_path}: {error}')
+            
+            self.static_config = deep_merge(default_config, override_config)
+        else:
+            self.static_config = default_config
 
         # Read from static script and validation
         try:

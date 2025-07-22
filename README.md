@@ -27,8 +27,18 @@ cdk-pipe:
     - echo "Deployment is completed"
 ```
 
-The default static script can be altered at runtime by setting `CDK_CONFIG_PATH` environment variable.
-It is mandatory to set CDK commands using the static scripts.
+The default static script can be overridden at runtime by setting `CDK_CONFIG_PATH` environment variable. When a custom config is provided, it will be deep-merged with the default configuration, allowing you to override only specific commands while inheriting the rest.
+
+For example, if you only want to override the deploy command, your custom config file can contain just:
+
+```yaml
+cdk-pipe:
+  commands:
+    cdk:
+      deploy: npx cdk deploy --require-approval never
+```
+
+All other commands (bootstrap, synth, diff, npm commands, etc.) will be inherited from the default config.
 
 ### Before and After scripts
 
