@@ -16,6 +16,8 @@ RUN python3 -m venv /venv && \
     PIP_CONSTRAINT=cython_constraint.txt pip install --no-cache-dir -r requirements.txt
 ENV PATH="/venv/bin:$PATH"
 
+RUN corepack enable yarn
+
 USER node
 
 ENTRYPOINT ["python", "/pipe.py"]
