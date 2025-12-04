@@ -1,5 +1,5 @@
 ARG NODE_TAG
-FROM node:${NODE_TAG}
+FROM node:${NODE_TAG:-24-alpine}
 
 # Install python3, pip and bash
 ENV PYTHONUNBUFFERED=1
