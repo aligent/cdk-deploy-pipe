@@ -1,0 +1,44 @@
+name: Build and Push Docker Image
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - staging
+  workflow_dispatch:
+
+concurrency:
+  group: docker-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    name: Node ${{ matrix.node.tag }}
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - tag: '22-alpine'
+            latest: false
+          # Matches the Dockerfile's default NODE_TAG, so it is also published as `latest`
+          - tag: '24-alpine'
+            latest: true
+    uses: aligent/workflows/.github/workflows/docker-build.yml@main
+    with:
+      image-name: aligent/cdk-deploy-pipe
+      # Only main/staging publish; pull requests and manual runs on other branches just build
+      push: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' }}
+      build-args: |
+        NODE_TAG=${{ matrix.node.tag }}
+      # Tags: 24-alpine, latest (main); 24-alpine-experimental, latest-experimental (staging)
+      tags: |
+        type=raw,value=${{ matrix.node.tag }}${{ github.ref_name == 'staging' && '-experimental' || '' }}
+        type=raw,value=latest${{ github.ref_name == 'staging' && '-experimental' || '' }},enable=${{ matrix.node.latest }}
+      # Separate cache scope per matrix entry so builds don't overwrite each other's cache
+      cache-from: type=gha,scope=node-${{ matrix.node.tag }}
+      cache-to: type=gha,mode=max,scope=node-${{ matrix.node.tag }}

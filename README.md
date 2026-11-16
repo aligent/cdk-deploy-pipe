@@ -82,7 +82,7 @@ Minimum configuration
 - step:
     name: "CDK Deploy"
     script:
-    - pipe: docker://aligent/cdk-deploy-pipe
+    - pipe: docker://ghcr.io/aligent/cdk-deploy-pipe:24-alpine
     variables: 
         AWS_ACCESS_KEY_ID=AWSACCESSKEYID123
         AWS_SECRET_ACCESS_KEY=awssecretaccesskey@#1232
@@ -133,6 +133,17 @@ To execute the cdk processes, python [subprocess] library has been used. To alte
             ...
         return True, combined_output
 ```
+
+## CI/CD
+
+Docker images are built and pushed to GitHub Container Registry (`ghcr.io/aligent/cdk-deploy-pipe`) via GitHub Actions
+(`.github/workflows/docker-build.yml`, using the shared `aligent/workflows` Docker build workflow). The workflow:
+
+- Builds an image for each configured Node base image tag (`22-alpine`, `24-alpine`), passed in as the `NODE_TAG` build arg
+- Also tags the `24-alpine` image (the Dockerfile's default `NODE_TAG`) as `latest`
+- Pushes images on commits to `main`; commits to `staging` push tags suffixed with `-experimental`
+- Builds without pushing on pull requests
+- Can be triggered manually
 
 [subprocess]:(https://docs.python.org/3/library/subprocess.html)  
 [static config]:cdk-config.yml
