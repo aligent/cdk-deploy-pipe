@@ -1,7 +1,0 @@
-#!/bin/bash
-NODE_TAG_VALUE="$(echo $DOCKER_TAG | sed 's/-experimental//g')"
-if [ "$NODE_TAG_VALUE" = "latest" ]; then
-    docker build -f $DOCKERFILE_PATH -t $IMAGE_NAME .
-else
-    docker build --build-arg NODE_TAG="$NODE_TAG_VALUE" -f $DOCKERFILE_PATH -t $IMAGE_NAME .
-fi
